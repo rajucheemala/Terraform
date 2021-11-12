@@ -1,20 +1,25 @@
-provider "aws" {
-  region = "us-east-2"
-}
-module "ec2_instance" {
-  source  = "terraform-aws-modules/ec2-instance/aws"
-  version = "~> 3.0"
-
-  name = "single-instance"
-
-  ami                    = "*********"
-  instance_type          = "t2.micro"
-  key_name               = "*******"
-  monitoring             = true
-  vpc_security_group_ids = ["***********"]
-  subnet_id              = "***********"
-  tags = {
-    Terraform   = "true"
-    Environment = "dev"
+terraform {
+  required_providers {
+    docker = {
+      source  = "kreuzwerker/docker"
+      version = "~> 2.13.0"
+    }
   }
 }
+
+provider "docker" {}
+
+resource "docker_image" "nginx" {
+  name         = "nginx:latest"
+  keep_locally = false
+}
+
+resource "docker_container" "nginx" {
+  image = docker_image.nginx.latest
+  name  = "tutorial"
+  ports {
+    internal = 80
+    external = 8000
+  }
+}
+
